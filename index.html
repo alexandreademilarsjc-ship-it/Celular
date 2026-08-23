@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -88,14 +88,44 @@ body {
   margin: 0 auto;
 }
 
+.app-eyebrow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
 .app-eyebrow {
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
-  margin: 0 0 4px;
+  margin: 0;
 }
+
+.sync-status {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sync-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+}
+
+.sync-status.ok::before { background: var(--good); }
+.sync-status.saving::before { background: var(--accent); }
+.sync-status.error::before { background: var(--bad); }
 
 .app-header h1 {
   margin: 0;
@@ -363,6 +393,11 @@ input:focus, select:focus {
   opacity: 0.85;
 }
 
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .filter-section {
   display: flex;
   align-items: center;
@@ -495,7 +530,10 @@ input:focus, select:focus {
 </head>
 <body>
   <header class="app-header">
-    <p class="app-eyebrow">Celular · Finanças</p>
+    <div class="app-eyebrow-row">
+      <p class="app-eyebrow">Celular · Finanças</p>
+      <span class="sync-status" id="syncStatus">Local</span>
+    </div>
     <h1>💰 Controle Financeiro</h1>
   </header>
 
@@ -572,7 +610,7 @@ input:focus, select:focus {
         <input type="date" id="date">
 
         <p class="form-error" id="formError" hidden></p>
-        <button type="submit" class="submit-btn">Adicionar</button>
+        <button type="submit" class="submit-btn" id="submitBtn">Adicionar</button>
       </form>
     </section>
 
@@ -593,7 +631,9 @@ input:focus, select:focus {
     </section>
   </main>
 
-  <script>
+<script>
+window.__INITIAL_TRANSACTIONS__ = [];
+/*APP-CODE-START*/
 const STORAGE_KEY = "celular-transactions";
 
 const CATEGORIES = {
@@ -601,7 +641,45 @@ const CATEGORIES = {
   income: ["Salário", "Freelance", "Investimentos", "Presente", "Outros"],
 };
 
-let transactions = loadTransactions();
+// ---- self-templating (artifact persistence) ----
+const DOC_HEAD = "<!doctype html>\n<html lang=\"pt-BR\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Controle Financeiro<\/title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap\" rel=\"stylesheet\">\n<style>\n:root {\n  --bg: #0d0f14;\n  --surface: #171a21;\n  --surface-alt: #1f232c;\n  --surface-raised: #262b36;\n  --border: #2a2f3b;\n  --ink: #edf0f5;\n  --ink-muted: #93a0b3;\n  --accent: #7c7ff2;\n  --accent-ink: #ffffff;\n  --good: #34d399;\n  --good-wash: rgba(52, 211, 153, 0.14);\n  --bad: #f87171;\n  --bad-wash: rgba(248, 113, 113, 0.14);\n  --radius-lg: 16px;\n  --radius-md: 12px;\n  --radius-sm: 8px;\n  --font-ui: \"Manrope\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n  --font-mono: \"IBM Plex Mono\", ui-monospace, \"SF Mono\", Menlo, Consolas, monospace;\n}\n\n:root[data-theme=\"light\"] {\n  --bg: #f6f4ef;\n  --surface: #ffffff;\n  --surface-alt: #f1efe7;\n  --surface-raised: #ffffff;\n  --border: #e2dfd4;\n  --ink: #1c1e24;\n  --ink-muted: #6c7280;\n  --accent: #5457d1;\n  --accent-ink: #ffffff;\n  --good: #067a06;\n  --good-wash: rgba(6, 122, 6, 0.1);\n  --bad: #d03b3b;\n  --bad-wash: rgba(208, 59, 59, 0.1);\n}\n\n@media (prefers-color-scheme: light) {\n  :root:not([data-theme=\"dark\"]) {\n    --bg: #f6f4ef;\n    --surface: #ffffff;\n    --surface-alt: #f1efe7;\n    --surface-raised: #ffffff;\n    --border: #e2dfd4;\n    --ink: #1c1e24;\n    --ink-muted: #6c7280;\n    --accent: #5457d1;\n    --accent-ink: #ffffff;\n    --good: #067a06;\n    --good-wash: rgba(6, 122, 6, 0.1);\n    --bad: #d03b3b;\n    --bad-wash: rgba(208, 59, 59, 0.1);\n  }\n}\n\n* {\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  font-family: var(--font-ui);\n  background: var(--bg);\n  color: var(--ink);\n  -webkit-font-smoothing: antialiased;\n}\n\n@media (prefers-reduced-motion: reduce) {\n  * {\n    transition-duration: 0.01ms !important;\n    animation-duration: 0.01ms !important;\n  }\n}\n\n.app-header {\n  padding: 28px 20px 6px;\n  max-width: 480px;\n  margin: 0 auto;\n}\n\n.app-eyebrow-row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n  margin-bottom: 4px;\n}\n\n.app-eyebrow {\n  font-size: 0.7rem;\n  font-weight: 600;\n  letter-spacing: 0.14em;\n  text-transform: uppercase;\n  color: var(--accent);\n  margin: 0;\n}\n\n.sync-status {\n  font-size: 0.66rem;\n  font-weight: 700;\n  letter-spacing: 0.04em;\n  color: var(--ink-muted);\n  display: flex;\n  align-items: center;\n  gap: 5px;\n}\n\n.sync-status::before {\n  content: \"\";\n  width: 6px;\n  height: 6px;\n  border-radius: 50%;\n  background: var(--ink-muted);\n}\n\n.sync-status.ok::before { background: var(--good); }\n.sync-status.saving::before { background: var(--accent); }\n.sync-status.error::before { background: var(--bad); }\n\n.app-header h1 {\n  margin: 0;\n  font-size: 1.5rem;\n  font-weight: 800;\n  letter-spacing: -0.01em;\n  text-wrap: balance;\n}\n\n.container {\n  max-width: 480px;\n  margin: 0 auto;\n  padding: 12px 20px 56px;\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n}\n\nh2 {\n  font-size: 0.95rem;\n  color: var(--ink-muted);\n  margin: 0 0 12px;\n  font-weight: 700;\n  letter-spacing: -0.01em;\n}\n\n.summary {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 10px;\n}\n\n.card {\n  background: var(--surface);\n  border: 1px solid var(--border);\n  border-radius: var(--radius-lg);\n  padding: 14px 8px;\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  text-align: center;\n}\n\n.card-label {\n  font-size: 0.68rem;\n  color: var(--ink-muted);\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n  font-weight: 700;\n}\n\n.card-value {\n  font-family: var(--font-mono);\n  font-size: 0.86rem;\n  font-weight: 600;\n  word-break: break-word;\n  font-variant-numeric: tabular-nums;\n  letter-spacing: -0.02em;\n}\n\n.card.income .card-value { color: var(--good); }\n.card.expense .card-value { color: var(--bad); }\n.card.balance .card-value { color: var(--ink); }\n\n.form-section,\n.chart-section {\n  background: var(--surface);\n  border: 1px solid var(--border);\n  border-radius: var(--radius-lg);\n  padding: 18px;\n}\n\n.chart-header {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  justify-content: space-between;\n  gap: 6px 12px;\n  margin-bottom: 12px;\n}\n\n.chart-header h2 {\n  margin: 0;\n}\n\n.chart-readout {\n  font-family: var(--font-mono);\n  font-size: 0.74rem;\n  color: var(--ink-muted);\n  font-variant-numeric: tabular-nums;\n}\n\n.chart-scroll {\n  overflow-x: auto;\n}\n\n.chart-svg {\n  display: block;\n}\n\n.chart-gridline {\n  stroke: var(--border);\n  stroke-width: 1;\n  shape-rendering: crispEdges;\n}\n\n.chart-axis-label {\n  fill: var(--ink-muted);\n  font-family: var(--font-mono);\n  font-size: 9px;\n}\n\n.chart-bar {\n  transition: filter 0.15s ease;\n}\n\n.chart-bar.expense {\n  fill: var(--bad);\n}\n\n.chart-bar.income {\n  fill: var(--good);\n}\n\n.chart-bar-active {\n  filter: brightness(1.25);\n}\n\n.chart-hit-area {\n  fill: transparent;\n  cursor: pointer;\n}\n\n.chart-hit-area:focus-visible {\n  outline: 2px solid var(--accent);\n  outline-offset: -2px;\n}\n\n.chart-table-details {\n  margin-top: 14px;\n}\n\n.chart-table-details summary {\n  font-size: 0.8rem;\n  color: var(--ink-muted);\n  cursor: pointer;\n  font-weight: 600;\n}\n\n.chart-table {\n  width: 100%;\n  border-collapse: collapse;\n  margin-top: 10px;\n  font-size: 0.85rem;\n}\n\n.chart-table th {\n  text-align: left;\n  padding: 6px 4px;\n  border-bottom: 1px solid var(--border);\n  color: var(--ink-muted);\n  font-size: 0.72rem;\n  text-transform: uppercase;\n  letter-spacing: 0.06em;\n}\n\n.chart-table td {\n  text-align: left;\n  padding: 7px 4px;\n  border-bottom: 1px solid var(--border);\n  font-family: var(--font-mono);\n}\n\n.chart-table td:last-child,\n.chart-table th:last-child {\n  text-align: right;\n  font-variant-numeric: tabular-nums;\n}\n\n#transactionForm {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n}\n\n.type-toggle {\n  display: flex;\n  gap: 8px;\n  margin-bottom: 2px;\n}\n\n.type-btn {\n  flex: 1;\n  padding: 11px;\n  border-radius: var(--radius-md);\n  border: 1px solid var(--border);\n  background: var(--surface-alt);\n  color: var(--ink-muted);\n  font-family: var(--font-ui);\n  font-weight: 700;\n  font-size: 0.9rem;\n  cursor: pointer;\n  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;\n}\n\n.type-btn.active[data-type=\"expense\"] {\n  background: var(--bad-wash);\n  border-color: var(--bad);\n  color: var(--bad);\n}\n\n.type-btn.active[data-type=\"income\"] {\n  background: var(--good-wash);\n  border-color: var(--good);\n  color: var(--good);\n}\n\nlabel {\n  font-size: 0.78rem;\n  color: var(--ink-muted);\n  font-weight: 600;\n}\n\ninput, select {\n  width: 100%;\n  padding: 11px 12px;\n  border-radius: var(--radius-md);\n  border: 1px solid var(--border);\n  background: var(--surface-alt);\n  color: var(--ink);\n  font-family: var(--font-ui);\n  font-size: 0.95rem;\n}\n\n#amount, #date {\n  font-family: var(--font-mono);\n}\n\ninput:focus, select:focus {\n  outline: none;\n  border-color: var(--accent);\n}\n\n.form-error {\n  margin: 0;\n  font-size: 0.8rem;\n  font-weight: 600;\n  color: var(--bad);\n}\n\n.submit-btn {\n  margin-top: 6px;\n  padding: 13px;\n  border: none;\n  border-radius: var(--radius-md);\n  background: var(--accent);\n  color: var(--accent-ink);\n  font-family: var(--font-ui);\n  font-weight: 700;\n  font-size: 0.95rem;\n  cursor: pointer;\n}\n\n.submit-btn:active {\n  opacity: 0.85;\n}\n\n.submit-btn:disabled {\n  opacity: 0.6;\n  cursor: default;\n}\n\n.filter-section {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n}\n\n.filter-section label {\n  white-space: nowrap;\n}\n\n.breakdown-list {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.breakdown-item {\n  background: var(--surface);\n  border: 1px solid var(--border);\n  border-radius: var(--radius-md);\n  padding: 11px 12px;\n}\n\n.breakdown-item-top {\n  display: flex;\n  justify-content: space-between;\n  font-size: 0.85rem;\n  margin-bottom: 7px;\n}\n\n.breakdown-item-top span:last-child {\n  font-family: var(--font-mono);\n  font-variant-numeric: tabular-nums;\n  color: var(--ink-muted);\n}\n\n.breakdown-bar-track {\n  height: 6px;\n  border-radius: 4px;\n  background: var(--surface-alt);\n  overflow: hidden;\n}\n\n.breakdown-bar-fill {\n  height: 100%;\n  background: var(--bad);\n  border-radius: 4px;\n}\n\n.empty-state {\n  color: var(--ink-muted);\n  text-align: center;\n  font-size: 0.9rem;\n  padding: 18px 0;\n}\n\n.transaction-list {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.transaction-item {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  background: var(--surface);\n  border: 1px solid var(--border);\n  border-radius: var(--radius-md);\n  padding: 11px 12px;\n}\n\n.transaction-info {\n  display: flex;\n  flex-direction: column;\n  gap: 2px;\n  min-width: 0;\n}\n\n.transaction-desc {\n  font-weight: 700;\n  font-size: 0.9rem;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.transaction-meta {\n  font-size: 0.75rem;\n  color: var(--ink-muted);\n}\n\n.transaction-amount {\n  font-family: var(--font-mono);\n  font-weight: 600;\n  font-size: 0.9rem;\n  white-space: nowrap;\n  font-variant-numeric: tabular-nums;\n}\n\n.transaction-amount.income { color: var(--good); }\n.transaction-amount.expense { color: var(--bad); }\n\n.delete-btn {\n  border: none;\n  background: transparent;\n  color: var(--ink-muted);\n  font-size: 1.1rem;\n  cursor: pointer;\n  padding: 0 4px;\n  line-height: 1;\n}\n\n.delete-btn:hover {\n  color: var(--bad);\n}\n\n.delete-btn:focus-visible,\n.type-btn:focus-visible,\n.submit-btn:focus-visible,\n.chart-table-details summary:focus-visible {\n  outline: 2px solid var(--accent);\n  outline-offset: 2px;\n}\n<\/style>\n<\/head>\n<body>\n  <header class=\"app-header\">\n    <div class=\"app-eyebrow-row\">\n      <p class=\"app-eyebrow\">Celular · Finanças<\/p>\n      <span class=\"sync-status\" id=\"syncStatus\">Local<\/span>\n    <\/div>\n    <h1>💰 Controle Financeiro<\/h1>\n  <\/header>\n\n  <main class=\"container\">\n    <section class=\"summary\">\n      <div class=\"card income\">\n        <span class=\"card-label\">Ganhos<\/span>\n        <span class=\"card-value\" id=\"totalIncome\">R$ 0,00<\/span>\n      <\/div>\n      <div class=\"card expense\">\n        <span class=\"card-label\">Gastos<\/span>\n        <span class=\"card-value\" id=\"totalExpense\">R$ 0,00<\/span>\n      <\/div>\n      <div class=\"card balance\">\n        <span class=\"card-label\">Saldo<\/span>\n        <span class=\"card-value\" id=\"balance\">R$ 0,00<\/span>\n      <\/div>\n    <\/section>\n\n    <section class=\"chart-section\">\n      <div class=\"chart-header\">\n        <h2>Gastos por mês<\/h2>\n        <span class=\"chart-readout\" id=\"expenseChartReadout\">Passe o mouse ou navegue pelas barras<\/span>\n      <\/div>\n      <div class=\"chart-scroll\">\n        <svg id=\"expenseChart\" class=\"chart-svg\"><\/svg>\n      <\/div>\n      <p id=\"expenseChartEmptyState\" class=\"empty-state\">Sem gastos registrados ainda.<\/p>\n      <details class=\"chart-table-details\" id=\"expenseChartTableDetails\">\n        <summary>Ver valores em tabela<\/summary>\n        <table class=\"chart-table\">\n          <thead><tr><th>Mês<\/th><th>Gastos<\/th><\/tr><\/thead>\n          <tbody id=\"expenseChartTableBody\"><\/tbody>\n        <\/table>\n      <\/details>\n    <\/section>\n\n    <section class=\"chart-section\">\n      <div class=\"chart-header\">\n        <h2>Ganhos por mês<\/h2>\n        <span class=\"chart-readout\" id=\"incomeChartReadout\">Passe o mouse ou navegue pelas barras<\/span>\n      <\/div>\n      <div class=\"chart-scroll\">\n        <svg id=\"incomeChart\" class=\"chart-svg\"><\/svg>\n      <\/div>\n      <p id=\"incomeChartEmptyState\" class=\"empty-state\">Sem ganhos registrados ainda.<\/p>\n      <details class=\"chart-table-details\" id=\"incomeChartTableDetails\">\n        <summary>Ver valores em tabela<\/summary>\n        <table class=\"chart-table\">\n          <thead><tr><th>Mês<\/th><th>Ganhos<\/th><\/tr><\/thead>\n          <tbody id=\"incomeChartTableBody\"><\/tbody>\n        <\/table>\n      <\/details>\n    <\/section>\n\n    <section class=\"form-section\">\n      <h2>Novo lançamento<\/h2>\n      <form id=\"transactionForm\">\n        <div class=\"type-toggle\">\n          <button type=\"button\" class=\"type-btn active\" data-type=\"expense\" id=\"btnExpense\">Gasto<\/button>\n          <button type=\"button\" class=\"type-btn\" data-type=\"income\" id=\"btnIncome\">Ganho<\/button>\n        <\/div>\n\n        <label for=\"description\">Descrição<\/label>\n        <input type=\"text\" id=\"description\" placeholder=\"Ex: Mercado, Salário...\">\n\n        <label for=\"amount\">Valor (R$)<\/label>\n        <input type=\"text\" inputmode=\"decimal\" id=\"amount\" placeholder=\"0,00\">\n\n        <label for=\"category\">Categoria<\/label>\n        <select id=\"category\"><\/select>\n\n        <label for=\"date\">Data<\/label>\n        <input type=\"date\" id=\"date\">\n\n        <p class=\"form-error\" id=\"formError\" hidden><\/p>\n        <button type=\"submit\" class=\"submit-btn\" id=\"submitBtn\">Adicionar<\/button>\n      <\/form>\n    <\/section>\n\n    <section class=\"filter-section\">\n      <label for=\"monthFilter\">Mês<\/label>\n      <select id=\"monthFilter\"><\/select>\n    <\/section>\n\n    <section class=\"breakdown-section\">\n      <h2>Gastos por categoria<\/h2>\n      <div id=\"categoryBreakdown\" class=\"breakdown-list\"><\/div>\n    <\/section>\n\n    <section class=\"list-section\">\n      <h2>Lançamentos<\/h2>\n      <ul id=\"transactionList\" class=\"transaction-list\"><\/ul>\n      <p id=\"emptyState\" class=\"empty-state\">Nenhum lançamento ainda. Adicione seu primeiro gasto ou ganho acima.<\/p>\n    <\/section>\n  <\/main>\n\n<script>\n";
+const DOC_TAIL = "\n<\/script>\n<\/body>\n<\/html>\n";
+
+const scriptText = document.currentScript ? document.currentScript.textContent : "";
+const markerIndex = scriptText.indexOf("/*APP-CODE-START*/");
+const APP_CODE_SOURCE = markerIndex >= 0 ? scriptText.slice(markerIndex) : "";
+
+function buildDocument(data) {
+  const dataJson = JSON.stringify(data).replace(/<\//g, "<\\/");
+  return DOC_HEAD + "window.__INITIAL_TRANSACTIONS__ = " + dataJson + ";\n" + APP_CODE_SOURCE + DOC_TAIL;
+}
+
+let artifactCap = null;
+const persistenceReady = (async () => {
+  if (!window.claude || typeof window.claude.use !== "function") return;
+  try {
+    artifactCap = await window.claude.use("artifact");
+  } catch {
+    artifactCap = null;
+  }
+})();
+
+function loadFromLocalStorage() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+  } catch {}
+}
+
+const embeddedTransactions = Array.isArray(window.__INITIAL_TRANSACTIONS__) ? window.__INITIAL_TRANSACTIONS__ : [];
+let transactions = embeddedTransactions.length > 0 ? embeddedTransactions : loadFromLocalStorage();
 let currentType = "expense";
 let monthFilter = "all";
 
@@ -614,6 +692,52 @@ const btnExpense = document.getElementById("btnExpense");
 const btnIncome = document.getElementById("btnIncome");
 const monthFilterSelect = document.getElementById("monthFilter");
 const formError = document.getElementById("formError");
+const syncStatus = document.getElementById("syncStatus");
+const submitBtn = document.getElementById("submitBtn");
+
+function setSyncStatus(state, text) {
+  syncStatus.className = "sync-status " + state;
+  syncStatus.textContent = text;
+}
+
+async function persist() {
+  saveToLocalStorage();
+  await persistenceReady;
+  if (!artifactCap) {
+    setSyncStatus("ok", "Local");
+    return;
+  }
+  setSyncStatus("saving", "Salvando...");
+  submitBtn.disabled = true;
+  try {
+    await artifactCap.publish(buildDocument(transactions));
+    // A successful publish reloads this view automatically.
+  } catch (err) {
+    submitBtn.disabled = false;
+    if (err && err.code === "conflict") {
+      // Another save won the race; the view is already reloading to it.
+      return;
+    }
+    setSyncStatus("error", "Não sincronizado (salvo só neste navegador)");
+  }
+}
+
+async function migrateLocalDataIfNeeded() {
+  await persistenceReady;
+  if (!artifactCap) return;
+  const hasServerData = Array.isArray(window.__INITIAL_TRANSACTIONS__) && window.__INITIAL_TRANSACTIONS__.length > 0;
+  if (hasServerData) {
+    setSyncStatus("ok", "Sincronizado");
+    return;
+  }
+  if (transactions.length > 0) {
+    // Showing data recovered from this browser's local storage, but the
+    // shared artifact copy doesn't have it yet — publish it up.
+    await persist();
+  } else {
+    setSyncStatus("ok", "Sincronizado");
+  }
+}
 
 function generateId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
@@ -636,18 +760,6 @@ function showFormError(message) {
 
 function hideFormError() {
   formError.hidden = true;
-}
-
-function loadTransactions() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function saveTransactions() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
 }
 
 function formatCurrency(value) {
@@ -744,13 +856,15 @@ function renderBreakdown(filtered, totalExpense) {
     item.className = "breakdown-item";
     item.innerHTML = `
       <div class="breakdown-item-top">
-        <span>${category}</span>
-        <span>${formatCurrency(amount)} (${percent}%)</span>
+        <span></span>
+        <span></span>
       </div>
       <div class="breakdown-bar-track">
         <div class="breakdown-bar-fill" style="width:${percent}%"></div>
       </div>
     `;
+    item.querySelectorAll(".breakdown-item-top span")[0].textContent = category;
+    item.querySelectorAll(".breakdown-item-top span")[1].textContent = `${formatCurrency(amount)} (${percent}%)`;
     container.appendChild(item);
   }
 }
@@ -768,22 +882,39 @@ function renderList(filtered) {
     const li = document.createElement("li");
     li.className = "transaction-item";
     const sign = t.type === "income" ? "+" : "-";
-    li.innerHTML = `
-      <div class="transaction-info">
-        <span class="transaction-desc">${t.description}</span>
-        <span class="transaction-meta">${t.category} · ${formatDate(t.date)}</span>
-      </div>
-      <span class="transaction-amount ${t.type}">${sign} ${formatCurrency(t.amount)}</span>
-      <button class="delete-btn" data-id="${t.id}" aria-label="Excluir">✕</button>
-    `;
+
+    const info = document.createElement("div");
+    info.className = "transaction-info";
+    const desc = document.createElement("span");
+    desc.className = "transaction-desc";
+    desc.textContent = t.description;
+    const meta = document.createElement("span");
+    meta.className = "transaction-meta";
+    meta.textContent = `${t.category} · ${formatDate(t.date)}`;
+    info.appendChild(desc);
+    info.appendChild(meta);
+
+    const amount = document.createElement("span");
+    amount.className = `transaction-amount ${t.type}`;
+    amount.textContent = `${sign} ${formatCurrency(t.amount)}`;
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "delete-btn";
+    delBtn.dataset.id = t.id;
+    delBtn.setAttribute("aria-label", "Excluir");
+    delBtn.textContent = "✕";
+
+    li.appendChild(info);
+    li.appendChild(amount);
+    li.appendChild(delBtn);
     list.appendChild(li);
   }
 
   list.querySelectorAll(".delete-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       transactions = transactions.filter((t) => t.id !== btn.dataset.id);
-      saveTransactions();
       render();
+      persist();
     });
   });
 }
@@ -1010,13 +1141,13 @@ form.addEventListener("submit", (event) => {
       category: categorySelect.value,
       date,
     });
-    saveTransactions();
 
     descriptionInput.value = "";
     amountInput.value = "";
     descriptionInput.focus();
 
     render();
+    persist();
   } catch (error) {
     showFormError("Não foi possível salvar o lançamento neste navegador.");
   }
@@ -1025,6 +1156,8 @@ form.addEventListener("submit", (event) => {
 dateInput.value = new Date().toISOString().slice(0, 10);
 setType("expense");
 render();
-  </script>
+migrateLocalDataIfNeeded();
+
+</script>
 </body>
 </html>

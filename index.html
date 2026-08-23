@@ -27,6 +27,24 @@
       </div>
     </section>
 
+    <section class="chart-section">
+      <div class="chart-header">
+        <h2>Gastos por mês</h2>
+        <span class="chart-readout" id="chartReadout">Passe o mouse ou navegue pelas barras</span>
+      </div>
+      <div class="chart-scroll">
+        <svg id="monthlyChart" class="chart-svg"></svg>
+      </div>
+      <p id="chartEmptyState" class="empty-state">Sem gastos registrados ainda.</p>
+      <details class="chart-table-details" id="chartTableDetails">
+        <summary>Ver valores em tabela</summary>
+        <table class="chart-table">
+          <thead><tr><th>Mês</th><th>Gastos</th></tr></thead>
+          <tbody id="chartTableBody"></tbody>
+        </table>
+      </details>
+    </section>
+
     <section class="form-section">
       <h2>Novo lançamento</h2>
       <form id="transactionForm">

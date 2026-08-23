@@ -72,17 +72,18 @@
         </div>
 
         <label for="description">Descrição</label>
-        <input type="text" id="description" placeholder="Ex: Mercado, Salário..." required>
+        <input type="text" id="description" placeholder="Ex: Mercado, Salário...">
 
         <label for="amount">Valor (R$)</label>
-        <input type="number" id="amount" step="0.01" min="0.01" placeholder="0,00" required>
+        <input type="text" inputmode="decimal" id="amount" placeholder="0,00">
 
         <label for="category">Categoria</label>
         <select id="category"></select>
 
         <label for="date">Data</label>
-        <input type="date" id="date" required>
+        <input type="date" id="date">
 
+        <p class="form-error" id="formError" hidden></p>
         <button type="submit" class="submit-btn">Adicionar</button>
       </form>
     </section>

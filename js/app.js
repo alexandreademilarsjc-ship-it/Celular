@@ -17,6 +17,30 @@ const dateInput = document.getElementById("date");
 const btnExpense = document.getElementById("btnExpense");
 const btnIncome = document.getElementById("btnIncome");
 const monthFilterSelect = document.getElementById("monthFilter");
+const formError = document.getElementById("formError");
+
+function generateId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function parseAmount(raw) {
+  let value = raw.trim();
+  if (value.includes(",") && value.includes(".")) {
+    value = value.replace(/\./g, "").replace(",", ".");
+  } else if (value.includes(",")) {
+    value = value.replace(",", ".");
+  }
+  return parseFloat(value);
+}
+
+function showFormError(message) {
+  formError.textContent = message;
+  formError.hidden = false;
+}
+
+function hideFormError() {
+  formError.hidden = true;
+}
 
 function loadTransactions() {
   try {
@@ -362,26 +386,44 @@ monthFilterSelect.addEventListener("change", () => {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
+  hideFormError();
 
-  const transaction = {
-    id: crypto.randomUUID(),
-    type: currentType,
-    description: descriptionInput.value.trim(),
-    amount: parseFloat(amountInput.value),
-    category: categorySelect.value,
-    date: dateInput.value,
-  };
+  try {
+    const description = descriptionInput.value.trim();
+    const amount = parseAmount(amountInput.value);
+    const date = dateInput.value;
 
-  if (!transaction.description || !transaction.amount || !transaction.date) return;
+    if (!description) {
+      showFormError("Informe uma descrição.");
+      return;
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      showFormError("Informe um valor válido, maior que zero.");
+      return;
+    }
+    if (!date) {
+      showFormError("Informe uma data.");
+      return;
+    }
 
-  transactions.push(transaction);
-  saveTransactions();
+    transactions.push({
+      id: generateId(),
+      type: currentType,
+      description,
+      amount,
+      category: categorySelect.value,
+      date,
+    });
+    saveTransactions();
 
-  descriptionInput.value = "";
-  amountInput.value = "";
-  descriptionInput.focus();
+    descriptionInput.value = "";
+    amountInput.value = "";
+    descriptionInput.focus();
 
-  render();
+    render();
+  } catch (error) {
+    showFormError("Não foi possível salvar o lançamento neste navegador.");
+  }
 });
 
 dateInput.value = new Date().toISOString().slice(0, 10);

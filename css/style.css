@@ -250,6 +250,12 @@ input:focus, select:focus {
   border-color: var(--accent);
 }
 
+.form-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--expense);
+}
+
 .submit-btn {
   margin-top: 6px;
   padding: 12px;

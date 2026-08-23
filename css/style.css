@@ -140,8 +140,15 @@ h2 {
 }
 
 .chart-bar {
-  fill: var(--expense);
   transition: filter 0.15s ease;
+}
+
+.chart-bar.expense {
+  fill: var(--expense);
+}
+
+.chart-bar.income {
+  fill: var(--income);
 }
 
 .chart-bar-active {

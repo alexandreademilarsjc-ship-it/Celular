@@ -97,7 +97,8 @@ function render() {
 
   renderBreakdown(filtered, totalExpense);
   renderList(filtered);
-  renderChart();
+  renderMonthlyChart("expense");
+  renderMonthlyChart("income");
 }
 
 function renderBreakdown(filtered, totalExpense) {
@@ -176,10 +177,10 @@ const CHART_PADDING_RIGHT = 12;
 const CHART_BAR_WIDTH = 22;
 const CHART_SLOT_WIDTH = 44;
 
-function getMonthlyExpenses() {
+function getMonthlyTotals(type) {
   const totals = {};
   for (const t of transactions) {
-    if (t.type !== "expense") continue;
+    if (t.type !== type) continue;
     const key = monthKey(t.date);
     totals[key] = (totals[key] || 0) + t.amount;
   }
@@ -225,20 +226,26 @@ function roundedTopBarPath(x, y, width, height, baselineY) {
   ].join(" ");
 }
 
-function updateChartReadout(text) {
-  document.getElementById("chartReadout").textContent = text;
+const CHART_LABELS = {
+  expense: { title: "Gráfico de gastos por mês", idle: "Passe o mouse ou navegue pelas barras" },
+  income: { title: "Gráfico de ganhos por mês", idle: "Passe o mouse ou navegue pelas barras" },
+};
+
+function updateChartReadout(type, text) {
+  document.getElementById(`${type}ChartReadout`).textContent = text;
 }
 
-function renderChart() {
-  const data = getMonthlyExpenses();
-  const svg = document.getElementById("monthlyChart");
-  const emptyState = document.getElementById("chartEmptyState");
-  const tableDetails = document.getElementById("chartTableDetails");
-  const tableBody = document.getElementById("chartTableBody");
+function renderMonthlyChart(type) {
+  const data = getMonthlyTotals(type);
+  const svg = document.getElementById(`${type}Chart`);
+  const emptyState = document.getElementById(`${type}ChartEmptyState`);
+  const tableDetails = document.getElementById(`${type}ChartTableDetails`);
+  const tableBody = document.getElementById(`${type}ChartTableBody`);
+  const idleText = CHART_LABELS[type].idle;
 
   svg.innerHTML = "";
   tableBody.innerHTML = "";
-  updateChartReadout("Passe o mouse ou navegue pelas barras");
+  updateChartReadout(type, idleText);
 
   if (data.length === 0) {
     emptyState.style.display = "block";
@@ -260,7 +267,7 @@ function renderChart() {
   svg.setAttribute("width", width);
   svg.setAttribute("height", CHART_HEIGHT);
   svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", "Gráfico de gastos por mês");
+  svg.setAttribute("aria-label", CHART_LABELS[type].title);
 
   const maxAmount = Math.max(...data.map((d) => d.amount));
   const niceMax = niceCeil(maxAmount);
@@ -294,7 +301,7 @@ function renderChart() {
 
     const bar = document.createElementNS(SVG_NS, "path");
     bar.setAttribute("d", roundedTopBarPath(barX, barY, CHART_BAR_WIDTH, barHeight, baselineY));
-    bar.setAttribute("class", "chart-bar");
+    bar.setAttribute("class", `chart-bar ${type}`);
     svg.appendChild(bar);
 
     const monthText = document.createElementNS(SVG_NS, "text");
@@ -318,19 +325,19 @@ function renderChart() {
     hitArea.setAttribute("aria-label", readoutText);
     hitArea.addEventListener("pointerenter", () => {
       bar.classList.add("chart-bar-active");
-      updateChartReadout(readoutText);
+      updateChartReadout(type, readoutText);
     });
     hitArea.addEventListener("pointerleave", () => {
       bar.classList.remove("chart-bar-active");
-      updateChartReadout("Passe o mouse ou navegue pelas barras");
+      updateChartReadout(type, idleText);
     });
     hitArea.addEventListener("focus", () => {
       bar.classList.add("chart-bar-active");
-      updateChartReadout(readoutText);
+      updateChartReadout(type, readoutText);
     });
     hitArea.addEventListener("blur", () => {
       bar.classList.remove("chart-bar-active");
-      updateChartReadout("Passe o mouse ou navegue pelas barras");
+      updateChartReadout(type, idleText);
     });
     svg.appendChild(hitArea);
 

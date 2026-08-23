@@ -30,17 +30,35 @@
     <section class="chart-section">
       <div class="chart-header">
         <h2>Gastos por mês</h2>
-        <span class="chart-readout" id="chartReadout">Passe o mouse ou navegue pelas barras</span>
+        <span class="chart-readout" id="expenseChartReadout">Passe o mouse ou navegue pelas barras</span>
       </div>
       <div class="chart-scroll">
-        <svg id="monthlyChart" class="chart-svg"></svg>
+        <svg id="expenseChart" class="chart-svg"></svg>
       </div>
-      <p id="chartEmptyState" class="empty-state">Sem gastos registrados ainda.</p>
-      <details class="chart-table-details" id="chartTableDetails">
+      <p id="expenseChartEmptyState" class="empty-state">Sem gastos registrados ainda.</p>
+      <details class="chart-table-details" id="expenseChartTableDetails">
         <summary>Ver valores em tabela</summary>
         <table class="chart-table">
           <thead><tr><th>Mês</th><th>Gastos</th></tr></thead>
-          <tbody id="chartTableBody"></tbody>
+          <tbody id="expenseChartTableBody"></tbody>
+        </table>
+      </details>
+    </section>
+
+    <section class="chart-section">
+      <div class="chart-header">
+        <h2>Ganhos por mês</h2>
+        <span class="chart-readout" id="incomeChartReadout">Passe o mouse ou navegue pelas barras</span>
+      </div>
+      <div class="chart-scroll">
+        <svg id="incomeChart" class="chart-svg"></svg>
+      </div>
+      <p id="incomeChartEmptyState" class="empty-state">Sem ganhos registrados ainda.</p>
+      <details class="chart-table-details" id="incomeChartTableDetails">
+        <summary>Ver valores em tabela</summary>
+        <table class="chart-table">
+          <thead><tr><th>Mês</th><th>Ganhos</th></tr></thead>
+          <tbody id="incomeChartTableBody"></tbody>
         </table>
       </details>
     </section>

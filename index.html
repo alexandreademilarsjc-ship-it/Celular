@@ -3,19 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Controle de Gastos e Ganhos</title>
+<title>Controle Financeiro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0f1115;
-  --surface: #181b21;
-  --surface-alt: #20242c;
-  --border: #2a2f3a;
-  --text: #eef1f5;
-  --text-muted: #9aa3b2;
-  --income: #34d399;
-  --expense: #f87171;
-  --accent: #6366f1;
-  --radius: 14px;
+  --bg: #0d0f14;
+  --surface: #171a21;
+  --surface-alt: #1f232c;
+  --surface-raised: #262b36;
+  --border: #2a2f3b;
+  --ink: #edf0f5;
+  --ink-muted: #93a0b3;
+  --accent: #7c7ff2;
+  --accent-ink: #ffffff;
+  --good: #34d399;
+  --good-wash: rgba(52, 211, 153, 0.14);
+  --bad: #f87171;
+  --bad-wash: rgba(248, 113, 113, 0.14);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --font-ui: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f4ef;
+  --surface: #ffffff;
+  --surface-alt: #f1efe7;
+  --surface-raised: #ffffff;
+  --border: #e2dfd4;
+  --ink: #1c1e24;
+  --ink-muted: #6c7280;
+  --accent: #5457d1;
+  --accent-ink: #ffffff;
+  --good: #067a06;
+  --good-wash: rgba(6, 122, 6, 0.1);
+  --bad: #d03b3b;
+  --bad-wash: rgba(208, 59, 59, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f6f4ef;
+    --surface: #ffffff;
+    --surface-alt: #f1efe7;
+    --surface-raised: #ffffff;
+    --border: #e2dfd4;
+    --ink: #1c1e24;
+    --ink-muted: #6c7280;
+    --accent: #5457d1;
+    --accent-ink: #ffffff;
+    --good: #067a06;
+    --good-wash: rgba(6, 122, 6, 0.1);
+    --bad: #d03b3b;
+    --bad-wash: rgba(208, 59, 59, 0.1);
+  }
 }
 
 * {
@@ -24,36 +69,57 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-ui);
   background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
 .app-header {
-  padding: 20px 16px 8px;
-  text-align: center;
+  padding: 28px 20px 6px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.app-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 4px;
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
 .container {
   max-width: 480px;
   margin: 0 auto;
-  padding: 12px 16px 48px;
-}
-
-section {
-  margin-bottom: 24px;
+  padding: 12px 20px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 h2 {
-  font-size: 1rem;
-  color: var(--text-muted);
-  margin: 0 0 10px;
-  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink-muted);
+  margin: 0 0 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .summary {
@@ -65,8 +131,8 @@ h2 {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px 8px;
+  border-radius: var(--radius-lg);
+  padding: 14px 8px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -74,34 +140,32 @@ h2 {
 }
 
 .card-label {
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  font-size: 0.68rem;
+  color: var(--ink-muted);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
+  font-weight: 700;
 }
 
 .card-value {
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  font-weight: 600;
   word-break: break-word;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
-.card.income .card-value { color: var(--income); }
-.card.expense .card-value { color: var(--expense); }
-.card.balance .card-value { color: var(--text); }
+.card.income .card-value { color: var(--good); }
+.card.expense .card-value { color: var(--bad); }
+.card.balance .card-value { color: var(--ink); }
 
-.form-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-}
-
+.form-section,
 .chart-section {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
+  border-radius: var(--radius-lg);
+  padding: 18px;
 }
 
 .chart-header {
@@ -110,7 +174,7 @@ h2 {
   align-items: baseline;
   justify-content: space-between;
   gap: 6px 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .chart-header h2 {
@@ -118,13 +182,10 @@ h2 {
 }
 
 .chart-readout {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.chart-readout strong {
-  color: var(--text);
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .chart-scroll {
@@ -142,7 +203,8 @@ h2 {
 }
 
 .chart-axis-label {
-  fill: var(--text-muted);
+  fill: var(--ink-muted);
+  font-family: var(--font-mono);
   font-size: 9px;
 }
 
@@ -151,11 +213,11 @@ h2 {
 }
 
 .chart-bar.expense {
-  fill: var(--expense);
+  fill: var(--bad);
 }
 
 .chart-bar.income {
-  fill: var(--income);
+  fill: var(--good);
 }
 
 .chart-bar-active {
@@ -173,13 +235,14 @@ h2 {
 }
 
 .chart-table-details {
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .chart-table-details summary {
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--ink-muted);
   cursor: pointer;
+  font-weight: 600;
 }
 
 .chart-table {
@@ -189,11 +252,21 @@ h2 {
   font-size: 0.85rem;
 }
 
-.chart-table th,
-.chart-table td {
+.chart-table th {
   text-align: left;
   padding: 6px 4px;
   border-bottom: 1px solid var(--border);
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.chart-table td {
+  text-align: left;
+  padding: 7px 4px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
 }
 
 .chart-table td:last-child,
@@ -205,51 +278,60 @@ h2 {
 #transactionForm {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .type-toggle {
   display: flex;
   gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .type-btn {
   flex: 1;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 11px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: var(--surface-alt);
-  color: var(--text-muted);
-  font-weight: 600;
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.9rem;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .type-btn.active[data-type="expense"] {
-  background: rgba(248, 113, 113, 0.15);
-  border-color: var(--expense);
-  color: var(--expense);
+  background: var(--bad-wash);
+  border-color: var(--bad);
+  color: var(--bad);
 }
 
 .type-btn.active[data-type="income"] {
-  background: rgba(52, 211, 153, 0.15);
-  border-color: var(--income);
-  color: var(--income);
+  background: var(--good-wash);
+  border-color: var(--good);
+  color: var(--good);
 }
 
 label {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  font-weight: 600;
 }
 
 input, select {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
+  padding: 11px 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: var(--surface-alt);
-  color: var(--text);
+  color: var(--ink);
+  font-family: var(--font-ui);
   font-size: 0.95rem;
+}
+
+#amount, #date {
+  font-family: var(--font-mono);
 }
 
 input:focus, select:focus {
@@ -260,16 +342,18 @@ input:focus, select:focus {
 .form-error {
   margin: 0;
   font-size: 0.8rem;
-  color: var(--expense);
+  font-weight: 600;
+  color: var(--bad);
 }
 
 .submit-btn {
   margin-top: 6px;
-  padding: 12px;
+  padding: 13px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--accent);
-  color: white;
+  color: var(--accent-ink);
+  font-family: var(--font-ui);
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
@@ -298,15 +382,21 @@ input:focus, select:focus {
 .breakdown-item {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  padding: 11px 12px;
 }
 
 .breakdown-item-top {
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
+}
+
+.breakdown-item-top span:last-child {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
 }
 
 .breakdown-bar-track {
@@ -318,15 +408,15 @@ input:focus, select:focus {
 
 .breakdown-bar-fill {
   height: 100%;
-  background: var(--expense);
+  background: var(--bad);
   border-radius: 4px;
 }
 
 .empty-state {
-  color: var(--text-muted);
+  color: var(--ink-muted);
   text-align: center;
   font-size: 0.9rem;
-  padding: 16px 0;
+  padding: 18px 0;
 }
 
 .transaction-list {
@@ -345,8 +435,8 @@ input:focus, select:focus {
   gap: 10px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  padding: 11px 12px;
 }
 
 .transaction-info {
@@ -357,7 +447,7 @@ input:focus, select:focus {
 }
 
 .transaction-desc {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
@@ -366,22 +456,24 @@ input:focus, select:focus {
 
 .transaction-meta {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--ink-muted);
 }
 
 .transaction-amount {
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-weight: 600;
   font-size: 0.9rem;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-.transaction-amount.income { color: var(--income); }
-.transaction-amount.expense { color: var(--expense); }
+.transaction-amount.income { color: var(--good); }
+.transaction-amount.expense { color: var(--bad); }
 
 .delete-btn {
   border: none;
   background: transparent;
-  color: var(--text-muted);
+  color: var(--ink-muted);
   font-size: 1.1rem;
   cursor: pointer;
   padding: 0 4px;
@@ -389,12 +481,21 @@ input:focus, select:focus {
 }
 
 .delete-btn:hover {
-  color: var(--expense);
+  color: var(--bad);
+}
+
+.delete-btn:focus-visible,
+.type-btn:focus-visible,
+.submit-btn:focus-visible,
+.chart-table-details summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 </style>
 </head>
 <body>
   <header class="app-header">
+    <p class="app-eyebrow">Celular · Finanças</p>
     <h1>💰 Controle Financeiro</h1>
   </header>
 

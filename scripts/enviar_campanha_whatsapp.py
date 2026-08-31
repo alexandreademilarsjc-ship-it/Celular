@@ -98,7 +98,8 @@ def gerar_texto_ia(client, modelo, prompt, max_tentativas=3):
         try:
             resposta = client.messages.create(
                 model=modelo,
-                max_tokens=300,
+                max_tokens=1024,
+                output_config={"effort": "low"},
                 messages=[{"role": "user", "content": prompt}],
             )
             return "".join(

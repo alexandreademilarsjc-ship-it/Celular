@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --gold: #c9a25c; --gold-hi: #d9b674; --ink: #f3ece0; --muted: #b5ab9b; --line: rgba(201,162,92,.35); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1080px; height: 1350px; background: #0b0b0d; }
+  .card {
+    position: relative; width: 1080px; height: 1350px; overflow: hidden;
+    background:
+      radial-gradient(900px 700px at 90% 8%, rgba(201,162,92,.18), transparent 60%),
+      radial-gradient(700px 600px at 0% 100%, rgba(201,162,92,.08), transparent 60%),
+      linear-gradient(160deg, #141317 0%, #0b0b0d 55%, #070708 100%);
+    color: var(--ink); font-family: 'Inter', sans-serif; padding: 96px 96px 0;
+  }
+  .frame { position: absolute; inset: 36px; border: 1px solid var(--line); pointer-events: none; }
+  .tag { font-size: 20px; letter-spacing: .42em; color: var(--gold); font-weight: 500; }
+  h1 { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 92px; line-height: 1; margin-top: 44px; letter-spacing: -.01em; }
+  h1 em { font-style: italic; font-weight: 500; color: var(--gold-hi); }
+  .sub { margin-top: 22px; font-size: 26px; line-height: 1.45; font-weight: 300; color: #d8d0c2; }
+  .steps { position: relative; margin-top: 60px; }
+  .step:not(:last-child)::after { content: ""; position: absolute; left: 35px; top: 72px; bottom: 0; width: 1px; background: var(--line); }
+  .step { position: relative; display: flex; gap: 36px; align-items: flex-start; padding: 0 0 46px; }
+  .num { flex: none; width: 72px; height: 72px; border-radius: 50%; border: 1px solid var(--gold); background: #0f0e11; display: grid; place-items: center; font-size: 28px; color: var(--gold-hi); font-weight: 500; }
+  .step:last-child .num { background: var(--gold); color: #0b0b0d; }
+  .step h3 { font-size: 30px; font-weight: 600; margin-top: 6px; }
+  .step p { margin-top: 8px; font-size: 22px; line-height: 1.45; color: var(--muted); font-weight: 300; max-width: 720px; }
+  .step p b { color: var(--ink); font-weight: 500; }
+  .foot { position: absolute; left: 96px; right: 96px; bottom: 84px; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid var(--line); padding-top: 34px; }
+  .name { font-family: 'Cormorant Garamond', serif; font-size: 54px; font-weight: 600; line-height: 1; }
+  .role { margin-top: 12px; font-size: 17px; letter-spacing: .3em; color: var(--gold); font-weight: 500; }
+  .phone { text-align: right; }
+  .phone small { display: block; font-size: 17px; letter-spacing: .3em; color: #a99f8f; margin-bottom: 10px; }
+  .phone span { font-size: 44px; font-weight: 500; letter-spacing: .02em; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="frame"></div>
+  <div class="tag">ADEMICON · CONSÓRCIO</div>
+  <h1>Como levantar <em>capital</em><br>com o consórcio.</h1>
+  <p class="sub">Uma estratégia planejada para investir sem juros e sem pesar no caixa.</p>
+
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div>
+      <h3>Escolha o crédito</h3>
+      <p>Defina o valor da carta e o prazo ideais para o seu projeto. <b>Sem entrada e sem juros.</b></p>
+    </div></div>
+    <div class="step"><div class="num">2</div><div>
+      <h3>Parcelas planejadas</h3>
+      <p>Você paga apenas o crédito e a <b>taxa de administração</b>, mantendo o capital de giro livre.</p>
+    </div></div>
+    <div class="step"><div class="num">3</div><div>
+      <h3>Contemplação</h3>
+      <p>Por <b>sorteio</b> mensal ou por <b>lance</b>, para antecipar o acesso ao crédito.</p>
+    </div></div>
+    <div class="step"><div class="num">4</div><div>
+      <h3>Capital em ação</h3>
+      <p>Use a carta em imóveis, frota ou equipamentos — ativos que <b>geram renda</b> e ampliam o patrimônio.</p>
+    </div></div>
+  </div>
+
+  <div class="foot">
+    <div>
+      <div class="name">Raissa Anjos</div>
+      <div class="role">CONSULTORA AUTORIZADA ADEMICON</div>
+    </div>
+    <div class="phone">
+      <small>WHATSAPP</small>
+      <span>(12) 99145-5719</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
